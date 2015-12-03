@@ -11,15 +11,15 @@ defmodule Kwfuns do
     {positionals, [keywords]} =  params |> Enum.split_while(&is_tuple/1)
     keyword_matches = ast_for_vars!(Keyword.keys keywords)
     positional_params = make_positional_parlist(positionals)
-    {:def, [context: Kwfuns, import: Kernel],
-      [{name, [context: Kwfuns], positional_params ++
-          [{:\\, [], [{:keywords, [], Kwfuns}, []]}]},
+    {:def, [context: __MODULE__, import: Kernel],
+      [{name, [context: __MODULE__], positional_params ++
+          [{:\\, [], [{:keywords, [], __MODULE__}, []]}]},
         block_from_asts([ {:=, [],
                 [{:%{}, [], 
                     keyword_matches},
-                  {:|>, [context: Kwfuns, import: Kernel],
+                  {:|>, [context: __MODULE__, import: Kernel],
                     [{{:., [], [{:__aliases__, [alias: false], [:Keyword]}, :merge]}, [],
-                        [keywords, {:keywords, [], Kwfuns}]},
+                        [keywords, {:keywords, [], __MODULE__}]},
                       {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :into]}, [],
                         [{:%{}, [], []}]}]}]}, body]) ]}
 
@@ -34,7 +34,7 @@ defmodule Kwfuns do
   end
 
   defp bare_ast_for_var! var_name do
-    {:var!, [context: Kwfuns, import: Kernel], [{var_name, [], Kwfuns}]}
+    {:var!, [context: __MODULE__, import: Kernel], [{var_name, [], __MODULE__}]}
   end
 
   defp ast_for_var! var_name do
