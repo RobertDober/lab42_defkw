@@ -16,7 +16,6 @@ defmodule KwfunsTest do
       a + b
     end
 
-
   end
 
   test "adder" do
@@ -31,6 +30,15 @@ defmodule KwfunsTest do
 
   test "plyer" do
     assert A.plyer(2) == 86
+  end
+
+  test "nop" do
+    assert_raise ArgumentError, "do not use defkw but simply def if you do not have any default values", fn ->
+      defmodule X do
+        use Kwfuns
+        defkw nop(), do: nil
+      end
+    end
   end
 end
 

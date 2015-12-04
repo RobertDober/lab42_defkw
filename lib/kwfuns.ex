@@ -8,7 +8,11 @@ defmodule Kwfuns do
 
 
   defmacro defkw( {name, _, params}, do: body ) do
-    {positionals, [keywords]} =  params |> Enum.split_while(&is_tuple/1)
+    {positionals, keywords} =  params |> Enum.split_while(&is_tuple/1)
+    keywords = case keywords do
+      []     -> raise ArgumentError, "do not use defkw but simply def if you do not have any default values"
+      [kwds] -> kwds
+    end
     keyword_matches = ast_for_vars!(Keyword.keys keywords)
     positional_params = make_positional_parlist(positionals)
     {:def, [context: __MODULE__, import: Kernel],
