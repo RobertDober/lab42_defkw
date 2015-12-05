@@ -5,6 +5,10 @@ defmodule Kwfuns.Mixfile do
     [app: :kwfuns,
      version: "0.0.1",
      elixir: "~> 1.1",
+     description: description,
+     maintainers: ["Robert Dober, robert.dober@gmail.com"],
+     licenses: ["Apache 2.0"],
+     links: %{github: "https://github.com/RobertDober/lab42_defkw"},
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps]
@@ -28,5 +32,13 @@ defmodule Kwfuns.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     []
+  end
+
+  def description do
+    """
+    Macros to create functions with syntax based keyword parameters with default values
+    E.g.
+    defkw make_liste_elem( parent, text, spaced: false, type: :ul ) do ...
+    """
   end
 end
