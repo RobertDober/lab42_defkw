@@ -6,9 +6,7 @@ defmodule Kwfuns.Mixfile do
      version: "0.0.1",
      elixir: "~> 1.1",
      description: description,
-     maintainers: ["Robert Dober, robert.dober@gmail.com"],
-     licenses: ["Apache 2.0"],
-     links: %{github: "https://github.com/RobertDober/lab42_defkw"},
+     package: package,
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      deps: deps]
@@ -41,4 +39,12 @@ defmodule Kwfuns.Mixfile do
     defkw make_liste_elem( parent, text, spaced: false, type: :ul ) do ...
     """
   end
+
+  def package do
+    [
+     maintainers: ["Robert Dober, robert.dober@gmail.com"],
+     licenses: ["Apache 2.0"],
+     links: %{github: "https://github.com/RobertDober/lab42_defkw"}
+     ]
 end
+
