@@ -48,6 +48,29 @@ defmodule Kwfuns do
 
   end
 
+  # TODO: This is 99.9% the same code as in defkw, need to reuse that code, but how???
+  defmacro defkwp( {name, _, params}, do: body ) do
+
+    {positionals, keywords} =  params |> Enum.split_while(&is_tuple/1)
+    positional_params = make_positional_parlist(positionals)
+    # e.g. [factor]
+
+    keywords_with_defaults  =  extract_keywords_with_defaults( keywords )
+    keyword_matches = ast_for_pattern_match(Keyword.keys keywords_with_defaults)
+
+    quote do
+      defp unquote(name)(unquote_splicing(positional_params), keywords \\ []) do
+      #e.g. def multiply_sum( factor, keywords \\ [] ) do
+
+        %{unquote_splicing(keyword_matches)} = 
+          Keyword.merge( unquote(keywords_with_defaults), keywords ) |> Enum.into(%{})
+        # e.g.         %{lhs: lhs, rhs: rhs} = Keyword.merge( [lhs: 0, rhs: 1], keywords ) |> Enum.into(%{})
+
+        unquote(body)
+      end
+    end
+
+  end
   defp extract_keywords_with_defaults keywords do
     case keywords do
       []     -> raise ArgumentError, "do not use defkw but simply def if you do not have any default values"
@@ -59,12 +82,10 @@ defmodule Kwfuns do
   end
 
 
-  @doc """
-  Transforms a list of atoms designating the keyword parameters to
-  the ast of a pattern match map to assign them as variables inside
-  the eventual function.
-  [:var1, ..., :varn] --> %{var1: var1, ..., varn: varn}
-  """
+  # Transforms a list of atoms designating the keyword parameters to
+  # the ast of a pattern match map to assign them as variables inside
+  # the eventual function.
+  # [:var1, ..., :varn] --> %{var1: var1, ..., varn: varn}
   defp ast_for_pattern_match var_names do
     for var_name <- var_names do 
       quote do

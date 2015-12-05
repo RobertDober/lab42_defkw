@@ -16,10 +16,16 @@ defmodule KwfunsTest do
       a + b
     end
 
+    defkwp private(a: 1), do: 2 * a
+    def public(a), do: private(a: a)
+
   end
 
   test "adder" do
     assert A.adder(a: 40, b: 2) == 42 
+  end
+  test "order" do
+    assert A.adder(b: 40, a: 2) == 42 
   end
   test "adder 1 default" do
     assert A.adder(b: 41) == 42
@@ -32,7 +38,7 @@ defmodule KwfunsTest do
     assert A.plyer(2) == 86
   end
 
-  test "nop" do
+  test "without kw params" do
     assert_raise ArgumentError, "do not use defkw but simply def if you do not have any default values", fn ->
       defmodule X do
         use Kwfuns
@@ -40,6 +46,18 @@ defmodule KwfunsTest do
       end
     end
   end
+
+  test "private" do
+    assert_raise UndefinedFunctionError, fn ->
+      assert A.private
+    end
+  end
+
+  test "private in scope" do
+    assert A.public(21) == 42
+  end
+
+
 
   # test "sum" do
   #   assert A.x(1,2) == 3
