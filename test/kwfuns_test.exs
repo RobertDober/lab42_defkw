@@ -1,6 +1,6 @@
 defmodule KwfunsTest do
   use ExUnit.Case
-  doctest Kwfuns
+  # doctest Kwfuns
 
   defmodule A do
     use Kwfuns
@@ -40,5 +40,9 @@ defmodule KwfunsTest do
       end
     end
   end
+
+  # test "sum" do
+  #   assert A.x(1,2) == 3
+  # end
 end
 
