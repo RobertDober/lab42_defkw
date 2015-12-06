@@ -1,4 +1,4 @@
-# Kwfuns
+# Kwfuns [![Build Status](https://travis-ci.org/RobertDober/lab42_defkw.svg?branch=master)](https://travis-ci.org/RobertDober/lab42_defkw)
 
 ## Macros to create functions with syntax based keyword parameters with default values
 

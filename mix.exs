@@ -35,16 +35,20 @@ defmodule Kwfuns.Mixfile do
   def description do
     """
     Macros to create functions with syntax based keyword parameters with default values
-    E.g.
-    defkw make_liste_elem( parent, text, spaced: false, type: :ul ) do ...
+
+    defkw make_list_elem( parent, text, spaced: false, type: :ul ) do ... end
+
+    translates to
+
+    def make_list_elem( parent, text, keywords \\ [] ) do some_code_with( spaces, typed) end
     """
   end
 
   def package do
     [
-     maintainers: ["Robert Dober, robert.dober@gmail.com"],
+     maintainers: ["Robert Dober <robert.dober@gmail.com>"],
      licenses: ["Apache 2.0"],
      links: %{github: "https://github.com/RobertDober/lab42_defkw"}
      ]
+  end
 end
-
