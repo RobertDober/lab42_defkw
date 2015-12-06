@@ -59,11 +59,26 @@ defmodule Kwfuns do
 
   defp body_with_keyword_match(keywords_with_defaults, keyword_matches, original_body) do
     quote do
-      %{unquote_splicing(keyword_matches)} = 
-      Keyword.merge( unquote(keywords_with_defaults), keywords ) |> Enum.into(%{})
-      # e.g.         %{lhs: lhs, rhs: rhs} = Keyword.merge( [lhs: 0, rhs: 1], keywords ) |> Enum.into(%{})
+      unquote(check_for_required_keywords(keywords_with_defaults))
 
+      %{unquote_splicing(keyword_matches)} = 
+        Keyword.merge( unquote(keywords_with_defaults), keywords ) |> Enum.into(%{})
       unquote(original_body)
+    end
+  end
+
+  defp check_for_required_keywords(keywords_with_defaults) do
+    required_keywords =
+      for {key, defval} <- keywords_with_defaults, keyword_required?(defval), do: key
+    check_for_required_keywords_ast( required_keywords )
+  end
+
+  def check_for_required_keywords_ast(required_keywords) do
+    quote do
+      missing_keywords = unquote(required_keywords) -- Keyword.keys( keywords )
+      unless Enum.empty?(missing_keywords) do
+        raise ArgumentError, message: "The following required keywords have not been provided: #{Enum.join( missing_keywords, ", " )}" 
+      end
     end
   end
 
@@ -74,7 +89,7 @@ defmodule Kwfuns do
     keyword_matches = ast_for_pattern_match(Keyword.keys keywords_with_defaults)
     { 
       make_positional_parlist(positionals),
-      remove_required_keywords(keywords_with_defaults),
+      keywords_with_defaults,
       keyword_matches
     }
   end
@@ -88,13 +103,15 @@ defmodule Kwfuns do
     for {positional, _, _} <- positionals, do: Macro.var( positional, nil)
   end
 
-  defp remove_required_keywords(kwlist) do
-    reject_required = fn
-      {_,{:kw_required,_,_}} -> true
-      _                      -> false
-    end
-    Enum.reject kwlist, reject_required
-  end
+  defp keyword_required?( {:kw_required,_,_}), do: true
+  defp keyword_required?( _ ),                 do: false
+  # defp remove_required_keywords(kwlist) do
+  #   reject_required = fn
+  #     {_,{:kw_required,_,_}} -> true
+  #     _                      -> false
+  #   end
+  #   Enum.reject kwlist, reject_required
+  # end
 
   # Transforms a list of atoms designating the keyword parameters to
   # the ast of a pattern match map to assign them as variables inside
