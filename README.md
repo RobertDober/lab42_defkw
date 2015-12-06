@@ -2,37 +2,24 @@
 
 [![Build Status](https://travis-ci.org/RobertDober/lab42_defkw.svg)](https://travis-ci.org/RobertDober/lab42_defkw)
 [![Hex.pm](https://img.shields.io/hexpm/v/kwfuns.svg?style=flat-square)](https://hex.pm/packages/kwfuns)
+[![Inline docs](http://inch-ci.org/github/RobertDober/kwfuns.svg?branch=master&style=flat)](http://inch-ci.org/github/RobertDober/kwfuns)
 
 ## Macros to create functions with syntax based keyword parameters with default values
 
-
-###  `defkw`
-
-Defines a function with defaulted keyword parameters that are syntactically
-available in the same way as positional parameters.
+### Usage
 
 ```elixir
-defkw multiply_sum( factor, lhs: 0, rhs: 1 ) do
-  factor * ( lhs + rhs )
-end
+    defmodule MyModule do
+      use Kwfuns
+      # Now use the macros defkw or defkwp
+      ...
+    end
 ```
 
-would compile to the following code
 
-```elixir
-def multiply_sum( factor, keywords // [] ) do
-  %{lhs: lhs, rhs: rhs} =
-    Keyword.merge( [lhs: 0, rhs: 0], keywords ) 
-    |> Enum.into( %{} )
-  factor * ( lhs + rhs )
-end
-```
+Detailed Documentation can be found [here](http://hexdocs.pm/kwfuns)
 
-### `defkwp`
-
-Same as `defkw` above but defining a private function.
-
-## LICENSE
+### LICENSE
 
 Same as Elixir, which is Apache 2.0, please refer to [LICENSE](LICENSE) for details.
 

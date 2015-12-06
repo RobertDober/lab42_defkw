@@ -3,7 +3,7 @@ defmodule Kwfuns.Mixfile do
 
   def project do
     [app: :kwfuns,
-     version: "0.0.2",
+     version: "0.0.3",
      elixir: "~> 1.1",
      description: description,
      package: package,
@@ -29,7 +29,10 @@ defmodule Kwfuns.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      {:earmark, "~> 0.1", only: :dev},
+      {:ex_doc, "~> 0.11", only: :dev}
+    ]
   end
 
   def description do

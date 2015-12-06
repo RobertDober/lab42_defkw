@@ -1,5 +1,27 @@
 defmodule Kwfuns do
 
+  @moduledoc """
+  Kwfuns allows to specify keyword list arguments with default values.
+
+  It exposes the macros `defkw`  and `defkwp` to define a function with keyword list arguments available in the body of the function
+  exactly the same as positional parameters.
+
+  While the former defines a public function the later defines a private one.
+  
+      defkw say_hello(to, greeting: "Hello") do
+        IO.puts( "\#{greeting}, \#{to}" )
+      end
+
+  If values are required that can be specified with the likewise exposed `kw_required` function
+
+      defkw say_hello(to: kw_required, greeting: "Hello") do
+        IO.puts( "\#{greeting}, \#{to}" )
+      end
+  """
+
+  @doc """
+  A unique value that designates a required value. It is made available to the module using `Kwfuns`
+  """
   def kw_required, do: fn -> end
 
   defmacro __using__(_options) do
@@ -13,37 +35,58 @@ defmodule Kwfuns do
   Define a function with defaulted keyword parameters that are syntactically
   available in the same way as positional parameters.
 
-  Ex:
-  defkw multiply_sum( factor, lhs: 0, rhs: 1 ) do
-  factor * ( lhs + rhs )
-  end
+  Here is a simple example: 
+
+      defkw multiply_sum( factor, lhs: 0, rhs: 1 ) do
+        factor * ( lhs + rhs )
+      end
 
   would correspond to the following code
 
-  def multiply_sum( factor, keywords // [] ) do
-  %{lhs: lhs, rhs: rhs} =
-  Keyword.merge( [lhs: 0, rhs: 0], keywords ) 
-  |> Enum.into( %{} )
-  factor * ( lhs + rhs )
-  end
+      def multiply_sum( factor, keywords // [] ) do
+        %{lhs: lhs, rhs: rhs} =
+          Keyword.merge( [lhs: 0, rhs: 0], keywords ) 
+          |> Enum.into( %{} )
+        factor * ( lhs + rhs )
+      end
+
+  However if required keywords are specified as follows:
+
+      defkw multiply_sum( factor: kw_required, lhs: 0, rhs: 0 ) do
+        factor * ( lhs + rhs )
+      end
+
+  The corresponding code is a little bit more complex
+
+      def multiply_sum( keywords // [] ) do
+        missing_keywords = [:factor] -- Keyword.keys( keywords )
+        unless Enum.empty?(missing_keywords) do
+          raise ArgumentError, message: "The following required keywords have not been provided: factor" 
+        end
+        %{factor: factor, lhs: lhs, rhs: rhs} =
+          Keyword.merge( [lhs: 0, rhs: 0], keywords ) 
+          |> Enum.into( %{} )
+        factor * ( lhs + rhs )
+      end
   """
+
   defmacro defkw( {name, _, params}, do: body ) do
 
     {positional_params, keywords_with_defaults, keyword_matches} =
       prepare_dynamic_ast( params )
 
-      ast =
     quote do
       def unquote(name)(unquote_splicing(positional_params), keywords \\ []) do
         #e.g. def multiply_sum( factor, keywords \\ [] ) do
         unquote( body_with_keyword_match(keywords_with_defaults, keyword_matches, body ))
       end
     end
-    # IO.puts Macro.to_string ast
-    ast
 
   end
 
+  @doc """
+  Same semantics as `defkw` but a _private_ function is defined.
+  """
   defmacro defkwp( {name, _, params}, do: body ) do
 
     {positional_params, keywords_with_defaults, keyword_matches} =
@@ -58,8 +101,12 @@ defmodule Kwfuns do
   end
 
   defp body_with_keyword_match(keywords_with_defaults, keyword_matches, original_body) do
+    required_keywords =
+      for {key, defval} <- keywords_with_defaults, keyword_required?(defval), do: key
     quote do
-      unquote(check_for_required_keywords(keywords_with_defaults))
+      unquote(unless Enum.empty?( required_keywords) do
+        check_for_required_keywords_ast(required_keywords)
+      end)
 
       %{unquote_splicing(keyword_matches)} = 
         Keyword.merge( unquote(keywords_with_defaults), keywords ) |> Enum.into(%{})
@@ -67,13 +114,8 @@ defmodule Kwfuns do
     end
   end
 
-  defp check_for_required_keywords(keywords_with_defaults) do
-    required_keywords =
-      for {key, defval} <- keywords_with_defaults, keyword_required?(defval), do: key
-    check_for_required_keywords_ast( required_keywords )
-  end
 
-  def check_for_required_keywords_ast(required_keywords) do
+  defp check_for_required_keywords_ast(required_keywords) do
     quote do
       missing_keywords = unquote(required_keywords) -- Keyword.keys( keywords )
       unless Enum.empty?(missing_keywords) do
