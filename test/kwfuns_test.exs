@@ -1,12 +1,9 @@
 defmodule KwfunsTest do
   use ExUnit.Case
-  # doctest Kwfuns
+  doctest Kwfuns
 
   defmodule A do
     use Kwfuns
-    # defkw add( lhs: 1, rhs: 41) do
-    #   lhs + rhs 
-    # end
     
     defkw plyer(factor, a: 1, b: 42) do
       factor * (a + b)
@@ -19,6 +16,8 @@ defmodule KwfunsTest do
     defkwp private(a: 1), do: 2 * a
     def public(a), do: private(a: a)
 
+
+    defkw required(a: kw_required, b: 1), do: a + b
   end
 
   test "adder" do
@@ -57,10 +56,16 @@ defmodule KwfunsTest do
     assert A.public(21) == 42
   end
 
+  test "required and provided" do
+    assert A.required(a: 1) == 2
 
+  end
 
-  # test "sum" do
-  #   assert A.x(1,2) == 3
-  # end
+  @tag :wip
+  test "required and not provided" do
+    assert_raise ArgumentError, fn ->
+      A.required(b: 1)
+    end
+  end
 end
 

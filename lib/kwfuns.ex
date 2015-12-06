@@ -1,6 +1,8 @@
 defmodule Kwfuns do
 
-  defmacro __using__(options) do
+  def kw_required, do: fn -> end
+
+  defmacro __using__(_options) do
     quote do
       import unquote(__MODULE__)
     end
@@ -13,63 +15,68 @@ defmodule Kwfuns do
 
   Ex:
   defkw multiply_sum( factor, lhs: 0, rhs: 1 ) do
-    factor * ( lhs + rhs )
+  factor * ( lhs + rhs )
   end
 
   would correspond to the following code
 
   def multiply_sum( factor, keywords // [] ) do
-    %{lhs: lhs, rhs: rhs} =
-      Keyword.merge( [lhs: 0, rhs: 0], keywords ) 
-      |> Enum.into( %{} )
-    factor * ( lhs + rhs )
+  %{lhs: lhs, rhs: rhs} =
+  Keyword.merge( [lhs: 0, rhs: 0], keywords ) 
+  |> Enum.into( %{} )
+  factor * ( lhs + rhs )
   end
   """
   defmacro defkw( {name, _, params}, do: body ) do
 
-    {positionals, keywords} =  params |> Enum.split_while(&is_tuple/1)
-    positional_params = make_positional_parlist(positionals)
-    # e.g. [factor]
+    {positional_params, keywords_with_defaults, keyword_matches} =
+      prepare_dynamic_ast( params )
 
-    keywords_with_defaults  =  extract_keywords_with_defaults( keywords )
-    keyword_matches = ast_for_pattern_match(Keyword.keys keywords_with_defaults)
-
+      ast =
     quote do
       def unquote(name)(unquote_splicing(positional_params), keywords \\ []) do
-      #e.g. def multiply_sum( factor, keywords \\ [] ) do
+        #e.g. def multiply_sum( factor, keywords \\ [] ) do
+        unquote( body_with_keyword_match(keywords_with_defaults, keyword_matches, body ))
+      end
+    end
+    # IO.puts Macro.to_string ast
+    ast
 
-        %{unquote_splicing(keyword_matches)} = 
-          Keyword.merge( unquote(keywords_with_defaults), keywords ) |> Enum.into(%{})
-        # e.g.         %{lhs: lhs, rhs: rhs} = Keyword.merge( [lhs: 0, rhs: 1], keywords ) |> Enum.into(%{})
+  end
 
-        unquote(body)
+  defmacro defkwp( {name, _, params}, do: body ) do
+
+    {positional_params, keywords_with_defaults, keyword_matches} =
+      prepare_dynamic_ast( params )
+
+    quote do
+      defp unquote(name)(unquote_splicing(positional_params), keywords \\ []) do
+        unquote( body_with_keyword_match(keywords_with_defaults, keyword_matches, body ))
       end
     end
 
   end
 
-  # TODO: This is 99.9% the same code as in defkw, need to reuse that code, but how???
-  defmacro defkwp( {name, _, params}, do: body ) do
+  defp body_with_keyword_match(keywords_with_defaults, keyword_matches, original_body) do
+    quote do
+      %{unquote_splicing(keyword_matches)} = 
+      Keyword.merge( unquote(keywords_with_defaults), keywords ) |> Enum.into(%{})
+      # e.g.         %{lhs: lhs, rhs: rhs} = Keyword.merge( [lhs: 0, rhs: 1], keywords ) |> Enum.into(%{})
 
+      unquote(original_body)
+    end
+  end
+
+  defp prepare_dynamic_ast( params ) do
     {positionals, keywords} =  params |> Enum.split_while(&is_tuple/1)
-    positional_params = make_positional_parlist(positionals)
-    # e.g. [factor]
 
     keywords_with_defaults  =  extract_keywords_with_defaults( keywords )
     keyword_matches = ast_for_pattern_match(Keyword.keys keywords_with_defaults)
-
-    quote do
-      defp unquote(name)(unquote_splicing(positional_params), keywords \\ []) do
-      #e.g. def multiply_sum( factor, keywords \\ [] ) do
-
-        %{unquote_splicing(keyword_matches)} = 
-          Keyword.merge( unquote(keywords_with_defaults), keywords ) |> Enum.into(%{})
-        # e.g.         %{lhs: lhs, rhs: rhs} = Keyword.merge( [lhs: 0, rhs: 1], keywords ) |> Enum.into(%{})
-
-        unquote(body)
-      end
-    end
-
+    { 
+      make_positional_parlist(positionals),
+      remove_required_keywords(keywords_with_defaults),
+      keyword_matches
+    }
   end
   defp extract_keywords_with_defaults keywords do
     case keywords do
@@ -81,6 +88,13 @@ defmodule Kwfuns do
     for {positional, _, _} <- positionals, do: Macro.var( positional, nil)
   end
 
+  defp remove_required_keywords(kwlist) do
+    reject_required = fn
+      {_,{:kw_required,_,_}} -> true
+      _                      -> false
+    end
+    Enum.reject kwlist, reject_required
+  end
 
   # Transforms a list of atoms designating the keyword parameters to
   # the ast of a pattern match map to assign them as variables inside
@@ -88,9 +102,9 @@ defmodule Kwfuns do
   # [:var1, ..., :varn] --> %{var1: var1, ..., varn: varn}
   defp ast_for_pattern_match var_names do
     for var_name <- var_names do 
-      quote do
-        {unquote(var_name), unquote(Macro.var(var_name, nil))}
-      end
+    quote do
+      {unquote(var_name), unquote(Macro.var(var_name, nil))}
+    end
     end
   end
 
