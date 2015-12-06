@@ -61,9 +61,8 @@ defmodule KwfunsTest do
 
   end
 
-  @tag :wip
   test "required and not provided" do
-    assert_raise ArgumentError, fn ->
+    assert_raise ArgumentError, "The following required keywords have not been provided: a", fn ->
       A.required(b: 1)
     end
   end
