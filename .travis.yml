@@ -1,8 +1,15 @@
 branches:
   only:
     - master
+
 sudo: false
+
 language: elixir
 elixir:
   - 1.1.0
   - 1.1.1
+
+# Inch CI
+after_script:
+  - MIX_ENV=docs mix deps.get
+  - MIX_ENV=docs mix inch.report

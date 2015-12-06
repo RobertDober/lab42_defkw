@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/RobertDober/lab42_defkw.svg)](https://travis-ci.org/RobertDober/lab42_defkw)
 [![Hex.pm](https://img.shields.io/hexpm/v/kwfuns.svg?style=flat-square)](https://hex.pm/packages/kwfuns)
-[![Inline docs](http://inch-ci.org/github/RobertDober/kwfuns.svg?branch=master&style=flat)](http://inch-ci.org/github/RobertDober/kwfuns)
+[![Inline docs](http://inch-ci.org/github/RobertDober/lab42_defkw.svg)](http://inch-ci.org/github/RobertDober/lab42_defkw)
 
 ## Macros to create functions with syntax based keyword parameters with default values
 
@@ -17,7 +17,7 @@
 ```
 
 
-Detailed Documentation can be found [here](http://hexdocs.pm/kwfuns)
+Detailed Documentation can be found [here](http://hexdocs.pm/kwfuns/Kwfuns.html)
 
 ### LICENSE
 
