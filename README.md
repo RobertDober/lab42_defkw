@@ -1,4 +1,7 @@
-# Kwfuns [![Build Status](https://travis-ci.org/RobertDober/lab42_defkw.svg)](https://travis-ci.org/RobertDober/lab42_defkw)
+# Kwfuns 
+
+[![Build Status](https://travis-ci.org/RobertDober/lab42_defkw.svg)](https://travis-ci.org/RobertDober/lab42_defkw)
+[![Hex.pm](https://img.shields.io/hexpm/v/kwfuns.svg?style=flat-square)](https://hex.pm/packages/kwfuns)
 
 ## Macros to create functions with syntax based keyword parameters with default values
 
