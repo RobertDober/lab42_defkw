@@ -105,13 +105,6 @@ defmodule Kwfuns do
 
   defp keyword_required?( {:kw_required,_,_}), do: true
   defp keyword_required?( _ ),                 do: false
-  # defp remove_required_keywords(kwlist) do
-  #   reject_required = fn
-  #     {_,{:kw_required,_,_}} -> true
-  #     _                      -> false
-  #   end
-  #   Enum.reject kwlist, reject_required
-  # end
 
   # Transforms a list of atoms designating the keyword parameters to
   # the ast of a pattern match map to assign them as variables inside
