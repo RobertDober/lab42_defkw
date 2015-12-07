@@ -17,12 +17,18 @@ defmodule Kwfuns do
       defkw say_hello(to: kw_required, greeting: "Hello") do
         IO.puts( "\#{greeting}, \#{to}" )
       end
+
+  ### Caveat:
+
+  For the time being `defkw` and `defkwp` do not support positional arguments with defaults.
+  If you try you will get a rather cryptic error message. Implemenation of this feature is
+  scheduled for version 0.1
   """
 
   @doc """
-  A unique value that designates a required value. It is made available to the module using `Kwfuns`
+  A placeholder to designate required keywords. It is made available to the module using `Kwfuns`
   """
-  def kw_required, do: fn -> end
+  def kw_required, do: nil
 
   defmacro __using__(_options) do
     quote do
@@ -73,7 +79,7 @@ defmodule Kwfuns do
   defmacro defkw( {name, _, params}, do: body ) do
 
     {positional_params, keywords_with_defaults, keyword_matches} =
-      prepare_dynamic_ast( params )
+      prepare_dynamic_ast( params, "" )
 
     quote do
       def unquote(name)(unquote_splicing(positional_params), keywords \\ []) do
@@ -90,7 +96,7 @@ defmodule Kwfuns do
   defmacro defkwp( {name, _, params}, do: body ) do
 
     {positional_params, keywords_with_defaults, keyword_matches} =
-      prepare_dynamic_ast( params )
+      prepare_dynamic_ast( params, "p" )
 
     quote do
       defp unquote(name)(unquote_splicing(positional_params), keywords \\ []) do
@@ -124,10 +130,10 @@ defmodule Kwfuns do
     end
   end
 
-  defp prepare_dynamic_ast( params ) do
+  defp prepare_dynamic_ast( params, pub_or_priv_str ) do
     {positionals, keywords} =  params |> Enum.split_while(&is_tuple/1)
 
-    keywords_with_defaults  =  extract_keywords_with_defaults( keywords )
+    keywords_with_defaults  =  extract_keywords_with_defaults( keywords, pub_or_priv_str )
     keyword_matches = ast_for_pattern_match(Keyword.keys keywords_with_defaults)
     { 
       make_positional_parlist(positionals),
@@ -135,9 +141,9 @@ defmodule Kwfuns do
       keyword_matches
     }
   end
-  defp extract_keywords_with_defaults keywords do
+  defp extract_keywords_with_defaults keywords, pub_or_priv_str do
     case keywords do
-      []     -> raise ArgumentError, "do not use defkw but simply def if you do not have any default values"
+      []     -> raise ArgumentError, "do not use defkw#{pub_or_priv_str} but simply def#{pub_or_priv_str} if you do not define any keyword parameters"
       [kwds] -> kwds
     end
   end
