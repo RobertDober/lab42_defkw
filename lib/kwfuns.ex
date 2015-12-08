@@ -25,10 +25,6 @@ defmodule Kwfuns do
   scheduled for version 0.1
   """
 
-  @doc """
-  A placeholder to designate required keywords. It is made available to the module using `Kwfuns`
-  """
-  def kw_required, do: nil
 
   defmacro __using__(_options) do
     quote do
@@ -36,12 +32,31 @@ defmodule Kwfuns do
     end
   end
 
+  @doc """
+  A placeholder to designate required keywords. It is made available to the module using `Kwfuns`
+
+      iex> use Kwfuns
+      iex> kw_required
+      nil
+  """
+  def kw_required, do: nil
 
   @doc """
   Define a function with defaulted keyword parameters that are syntactically
   available in the same way as positional parameters.
 
   Here is a simple example: 
+
+      iex> defmodule A do            
+      ...>   use Kwfuns              
+      ...>   defkw hello(a: 1), do: a
+      ...> end    
+      iex> A.hello
+      1
+      iex> A.hello(a: 2)
+      2
+  
+  As such the following macro invocation
 
       defkw multiply_sum( factor, lhs: 0, rhs: 1 ) do
         factor * ( lhs + rhs )
