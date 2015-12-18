@@ -15,7 +15,7 @@ defmodule Kwfuns.PatternMatchingTest do
       defkw bad_map([], result, fun: kw_required), do: Enum.reverse(result)
       defkw bad_map([], _), do: [] 
       defkw bad_map(list, fun: fn x -> x end), do: bad_map(list, [], fun: fun)
-      defkw bad_map([h|t], sofar, fun: ","), do bad_map(t, [fun.(h) | sofar], fun: fun)
+      defkw bad_map([h|t], sofar, fun: ","), do: bad_map(t, [fun.(h) | sofar], fun: fun)
 
       # A better approach is to make sure is to have only the same arity for each
       # function
